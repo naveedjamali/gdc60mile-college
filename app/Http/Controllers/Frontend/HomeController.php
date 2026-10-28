@@ -3,15 +3,28 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Staff;
+use App\Models\Program;
+use App\Models\ProgramPart;
 use Illuminate\Http\Request;
 
-class HomeController extends Controller
+class FeeStructureController extends Controller
 {
-    //
+    public function index()
+    {
+        $programs = Program::with('programParts')->get();
 
-    public function index(){
-        $principal = Staff::where('designation','=','Principal')->first();
-        return view('frontend.index',compact('principal'));
+        $programs->transform(function ($program) {
+            $program->part1_fee = $program->programParts
+                ->where('part_id', 1)
+                ->first()?->fees;
+
+            $program->part2_fee = $program->programParts
+                ->where('part_id', 2)
+                ->first()?->fees;
+
+            return $program;
+        });
+
+        return view('frontend.fee-structure', compact('programs'));
     }
 }
